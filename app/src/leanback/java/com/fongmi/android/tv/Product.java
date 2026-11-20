@@ -11,8 +11,12 @@ public class Product {
 
     public static int getColumn() {
         int widthDp = ResUtil.getScreenWidth() / Math.max(1, ResUtil.dp2px(1));
-        if (widthDp < 480) return Math.max(2, Math.min(3, widthDp / 120));
-        if (widthDp < 600) return Math.max(3, Math.min(4, widthDp / 130));
+        // Give portrait phones roomier cards and readable titles instead of forcing
+        // three narrow columns onto a typical handset.
+        if (widthDp < 480) return 2;
+        if (widthDp < 600) return 3;
+        // A phone in landscape should not inherit the very dense TV grid.
+        if (widthDp < 960) return 4;
         return Math.abs(Setting.getSize() - 7);
     }
 
