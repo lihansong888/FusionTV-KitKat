@@ -25,8 +25,9 @@ Preserve the traditional TVBox/FongMi/OK-style information architecture and visu
 - App minSdk 19, targetSdk 28, Java 8 source compatibility.
 - Only one leanback flavor exists today; its manifest locks screens to landscape.
 - The app UI source is under app/src/leanback; app/src/main contains shared/core code and CrashActivity. There is no mobile UI source set in this repository.
-- The app currently filters native packaging to armeabi-v7a.
-- IJK, Jianpian and Thunder include ARMv7 and ARM64 libraries. ForceTech and ZLive only include ARMv7 native libraries in this repository. Their use on ARM64 must be disabled safely or supplied with verified ARM64 builds before enabling ARM64 packaging. TVBus loads a native library from a runtime path and needs separate audit.
+- The app is now configured to package armeabi-v7a and arm64-v8a in the same APK; the two-ABI build is running through CI validation.
+- IJK, Jianpian and Thunder include ARMv7 and ARM64 libraries. The active ForceTech, ZLive and TVBus app extractors are currently no-op stubs; ForceTech's separate legacy native service is ARMv7-only and must remain unavailable on ARM64 unless a verified ARM64 binary is supplied.
+- The legacy TLS bridge (libntvtls.so) is ARMv7-only and is selected for Android API 19–20, which are 32-bit-only devices. ARM64 Android devices start at API 21 and use the platform TLS stack.
 - API 19 support cannot be achieved by merely changing minSdk: every dependency, Android API call, manifest feature and native module must be checked.
 
 ## Security work started on this branch
