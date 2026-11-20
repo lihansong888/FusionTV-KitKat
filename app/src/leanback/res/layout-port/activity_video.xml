@@ -22,7 +22,7 @@
         android:nextFocusLeft="@id/video"
         android:nextFocusRight="@id/desc"
         android:nextFocusUp="@id/video"
-        android:nextFocusDown="@id/flag">
+        android:nextFocusDown="@id/desc">
 
         <androidx.media3.ui.PlayerView
             android:id="@+id/exo"
@@ -94,14 +94,14 @@
 
     <LinearLayout
         android:id="@+id/row1"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/remark"
         android:layout_alignStart="@+id/remark"
         android:layout_alignLeft="@+id/remark"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:orientation="horizontal">
 
         <TextView
@@ -112,7 +112,7 @@
             android:layout_marginRight="12dp"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="13sp"
             tools:text="站源：泥巴" />
 
         <TextView
@@ -123,7 +123,7 @@
             android:layout_marginRight="12dp"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="13sp"
             tools:text="年份：2022" />
 
         <TextView
@@ -134,7 +134,7 @@
             android:layout_marginRight="12dp"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="13sp"
             tools:text="地區：台灣" />
 
         <TextView
@@ -143,7 +143,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="13sp"
             tools:text="類型：科幻" />
 
     </LinearLayout>
@@ -156,12 +156,12 @@
         android:layout_alignStart="@+id/name"
         android:layout_alignLeft="@+id/name"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:nextFocusDown="@id/actor"
         android:singleLine="true"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="14sp"
         tools:text="導演：FongMi" />
 
     <TextView
@@ -172,12 +172,12 @@
         android:layout_alignStart="@+id/name"
         android:layout_alignLeft="@+id/name"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:nextFocusDown="@id/content"
         android:singleLine="true"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="14sp"
         tools:text="演員：FongMi" />
 
     <TextView
@@ -188,14 +188,14 @@
         android:layout_alignStart="@+id/name"
         android:layout_alignLeft="@+id/name"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:ellipsize="end"
         android:lineSpacingExtra="4dp"
-        android:maxLines="1"
+        android:maxLines="2"
         android:nextFocusDown="@id/desc"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="14sp"
         tools:text="簡介：" />
 
     <LinearLayout
