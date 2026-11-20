@@ -36,6 +36,8 @@ jobs:
           yes | "$SDKMANAGER" "platforms;android-35" "build-tools;36.0.0" "platform-tools" || true
           test -f "$ANDROID_HOME/platforms/android-35/android.jar"
           test -x "$ANDROID_HOME/build-tools/36.0.0/aapt"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -x "$ANDROID_HOME/build-tools/36.0.0/zipalign"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -43,10 +45,23 @@ jobs:
       - name: Build debug APK
         run: ./gradlew :app:assembleLeanbackDebug --no-daemon
 
+      - name: Verify APK package, SDK, alignment and signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/leanback/debug/leanback.apk"
+          test -s "$APK"
+          file "$APK"
+          sha256sum "$APK"
+          unzip -t "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: fusiontv-kitkat-debug
+          name: fusiontv-kitkat-debug-verified
           path: app/build/outputs/apk/leanback/debug/leanback.apk
           if-no-files-found: error
           retention-days: 7
