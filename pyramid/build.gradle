@@ -19,7 +19,6 @@ chaquopy {
         version = "3.11"
         pip {
             install "lxml"
-            install "ujson"
             install "pyquery"
             install "requests"
             install "jsonpath"
