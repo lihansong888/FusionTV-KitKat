@@ -147,7 +147,7 @@ public class OkHttp {
     }
 
     private static OkHttpClient.Builder getBuilder() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder().addInterceptor(new RequestInterceptor()).addNetworkInterceptor(new ResponseInterceptor()).connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS).readTimeout(TIMEOUT, TimeUnit.MILLISECONDS).writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS).dns(dns()).hostnameVerifier((hostname, session) -> true).followRedirects(true).sslSocketFactory(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? new xiao.bu.tv.LegacyTlsSocket.Factory(SSLCompat.TM) : new SSLCompat(), SSLCompat.TM);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder().addInterceptor(new RequestInterceptor()).addNetworkInterceptor(new ResponseInterceptor()).connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS).readTimeout(TIMEOUT, TimeUnit.MILLISECONDS).writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS).dns(dns()).followRedirects(true).sslSocketFactory(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? new xiao.bu.tv.LegacyTlsSocket.Factory(SSLCompat.TM) : new SSLCompat(), SSLCompat.TM);
         builder.proxySelector(get().proxy ? selector() : defaultSelector);
         return builder;
     }
