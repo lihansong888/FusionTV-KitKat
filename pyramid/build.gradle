@@ -4,29 +4,27 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    namespace "com.undcover.freedom.pyramid"
+    compileSdk 35
 
     defaultConfig {
-        minSdk 16
+        minSdk 24
         targetSdk 28
-        ndk { abiFilters "armeabi-v7a" }
-        python {
-            buildPython "C:/Users/FongMi/AppData/Local/Programs/Python/Python38/python.exe"
-            pip {
-                install "lxml"
-                install "ujson"
-                install "pyquery"
-                install "requests"
-                install "jsonpath"
-                install 'pycryptodome'
-                install 'beautifulsoup4'
-            }
-        }
+        ndk { abiFilters "armeabi-v7a", "arm64-v8a" }
     }
+}
 
-    sourceSets {
-        main {
-            python.srcDirs = ["src/main/python"]
+chaquopy {
+    defaultConfig {
+        version = "3.11"
+        pip {
+            install "lxml"
+            install "ujson"
+            install "pyquery"
+            install "requests"
+            install "jsonpath"
+            install "pycryptodome"
+            install "beautifulsoup4"
         }
     }
 }
