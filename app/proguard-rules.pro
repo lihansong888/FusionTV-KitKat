@@ -100,3 +100,5 @@
 -dontwarn com.tencent.smtt.**
 -keep class com.tencent.smtt.** { *; }
 -keep class com.tencent.tbs.** { *; }
+# Python runtime is loaded reflectively by PyLoader.
+-keep class com.undcover.freedom.pyramid.Loader { *; }
