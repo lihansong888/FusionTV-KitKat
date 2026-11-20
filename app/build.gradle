@@ -14,7 +14,8 @@ android {
         versionCode 251
         versionName "2.5.0-kitkat.2"
         multiDexEnabled true
-        ndk { abiFilters "armeabi-v7a" }
+        // Android 4.4 devices are 32-bit; ARM64 devices require Android 5.0+ and use platform TLS.
+        ndk { abiFilters "armeabi-v7a", "arm64-v8a" }
         resConfigs "zh", "zh-rCN"
         javaCompileOptions {
             annotationProcessorOptions {
