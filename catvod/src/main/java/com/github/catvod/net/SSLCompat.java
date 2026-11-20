@@ -1,7 +1,5 @@
 package com.github.catvod.net;
 
-import android.annotation.SuppressLint;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -15,6 +13,8 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 public class SSLCompat extends SSLSocketFactory {
@@ -36,7 +36,7 @@ public class SSLCompat extends SSLSocketFactory {
             preferredCiphers.addAll(new HashSet<>(Arrays.asList(socket.getEnabledCipherSuites())));
             cipherSuites = preferredCiphers.toArray(new String[0]);
             SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, new X509TrustManager[]{TM}, null);
+            context.init(null, new TrustManager[]{TM}, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(factory = context.getSocketFactory());
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,20 +93,18 @@ public class SSLCompat extends SSLSocketFactory {
         if (cipherSuites != null) ssl.setEnabledCipherSuites(cipherSuites);
     }
 
-    @SuppressLint({"TrustAllX509TrustManager", "CustomX509TrustManager"})
-    public static final X509TrustManager TM = new X509TrustManager() {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+    private static X509TrustManager createTrustManager() {
+        try {
+            TrustManagerFactory managerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            managerFactory.init((java.security.KeyStore) null);
+            for (TrustManager manager : managerFactory.getTrustManagers()) {
+                if (manager instanceof X509TrustManager) return (X509TrustManager) manager;
+            }
+            throw new IllegalStateException("No system X509TrustManager available");
+        } catch (Exception error) {
+            throw new IllegalStateException("Unable to initialize system certificate trust", error);
         }
+    }
 
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[]{};
-        }
-    };
+    public static final X509TrustManager TM = createTrustManager();
 }
