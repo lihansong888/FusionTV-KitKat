@@ -10,11 +10,15 @@ public class Product {
     }
 
     public static int getColumn() {
+        int widthDp = ResUtil.getScreenWidth() / Math.max(1, ResUtil.dp2px(1));
+        if (widthDp < 480) return Math.max(2, Math.min(3, widthDp / 120));
+        if (widthDp < 600) return Math.max(3, Math.min(4, widthDp / 130));
         return Math.abs(Setting.getSize() - 7);
     }
 
     public static int getColumn(Style style) {
-        return style.isLand() ? getColumn() - 1 : getColumn();
+        int column = getColumn();
+        return style.isLand() ? Math.max(2, column - 1) : column;
     }
 
     public static int[] getSpec(Style style) {
