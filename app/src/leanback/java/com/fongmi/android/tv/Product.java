@@ -11,12 +11,13 @@ public class Product {
 
     public static int getColumn() {
         int widthDp = ResUtil.getScreenWidth() / Math.max(1, ResUtil.dp2px(1));
-        // Give portrait phones roomier cards and readable titles instead of forcing
-        // three narrow columns onto a typical handset.
-        if (widthDp < 480) return 2;
-        if (widthDp < 600) return 3;
-        // A phone in landscape should not inherit the very dense TV grid.
-        if (widthDp < 960) return 4;
+        // Keep the existing TV/tablet column preference untouched.
+        // On phones, use wider cards in portrait and a restrained grid in landscape.
+        if (!ResUtil.isPad()) {
+            if (widthDp < 480) return 2;
+            if (widthDp < 600) return 3;
+            return 4;
+        }
         return Math.abs(Setting.getSize() - 7);
     }
 
