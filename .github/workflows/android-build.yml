@@ -12,7 +12,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -25,6 +25,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Set up Python 3.11 for Chaquopy
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - name: Accept Android SDK licenses and install packages
         shell: bash
@@ -42,14 +47,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleLeanbackDebug --no-daemon
+      - name: Build legacy and Python-enabled APKs
+        run: ./gradlew :app:assembleLeanbackLegacyDebug :app:assembleLeanbackFullDebug --no-daemon
 
-      - name: Verify APK package, SDK, alignment and signatures
+      - name: Verify legacy APK
         shell: bash
         run: |
           set -euo pipefail
-          APK="app/build/outputs/apk/leanback/debug/leanback.apk"
+          APK="app/build/outputs/apk/leanbackLegacy/debug/leanbackLegacyDebug.apk"
           test -s "$APK"
           file "$APK"
           sha256sum "$APK"
@@ -58,10 +63,31 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
 
-      - name: Upload debug APK
+      - name: Verify Python-enabled APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/leanbackFull/debug/leanbackFullDebug.apk"
+          test -s "$APK"
+          file "$APK"
+          sha256sum "$APK"
+          unzip -t "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+
+      - name: Upload legacy APK
         uses: actions/upload-artifact@v4
         with:
-          name: fusiontv-kitkat-debug-verified
-          path: app/build/outputs/apk/leanback/debug/leanback.apk
+          name: fusiontv-legacy-android-4.4
+          path: app/build/outputs/apk/leanbackLegacy/debug/leanbackLegacyDebug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Python-enabled APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fusiontv-full-python-android-7
+          path: app/build/outputs/apk/leanbackFull/debug/leanbackFullDebug.apk
           if-no-files-found: error
           retention-days: 7
