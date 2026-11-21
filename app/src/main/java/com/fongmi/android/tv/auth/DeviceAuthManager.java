@@ -236,7 +236,7 @@ public final class DeviceAuthManager {
         boolean wasAuthorized = authorized;
         authorized = false;
         if (wasAuthorized && callback != null) callback.onRevoked();
-        if (!activity.hasWindowFocus()) {
+        if (wasAuthorized && !activity.hasWindowFocus()) {
             activity.finishAffinity();
             return;
         }
