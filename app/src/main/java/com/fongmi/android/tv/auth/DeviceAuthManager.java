@@ -107,6 +107,7 @@ public final class DeviceAuthManager {
             }
         }
         registerDevice();
+        handler.postDelayed(refreshCodeRunnable, CODE_REFRESH_INTERVAL);
     }
 
     private int dp(float value) {
