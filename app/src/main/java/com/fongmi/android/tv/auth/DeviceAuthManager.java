@@ -48,7 +48,9 @@ public final class DeviceAuthManager {
     private String deviceToken;
     private String deviceCode = "";
     private volatile boolean finished;
+    private volatile boolean authorized;
     private volatile boolean requestInFlight;
+    private boolean callbackDelivered;
 
     private final Runnable pollRunnable = new Runnable() {
         @Override
@@ -149,7 +151,7 @@ public final class DeviceAuthManager {
                 deviceCode = result.optString("device_code", deviceCode);
                 String status = result.optString("status", "pending");
                 handleStatus(status, result.optString("message", ""));
-                if (!"approved".equals(status)) schedulePoll();
+                schedulePoll();
             } catch (Exception e) {
                 showMessage("暂时无法连接授权服务器，正在自动重试。\n\n请检查电视网络连接。");
                 schedulePoll();
@@ -217,14 +219,30 @@ public final class DeviceAuthManager {
         if ("approved".equals(status)) {
             handler.post(this::approved);
         } else if ("blocked".equals(status)) {
-            showMessage("此设备已被管理员远程锁定。\n\n请联系管理员恢复设备使用。\n\n设备编号：" + deviceId);
+            handler.post(() -> showGate("此设备已被管理员远程锁定。\n\n请联系管理员恢复设备使用。\n\n设备编号：" + deviceId));
         } else if ("rejected".equals(status)) {
-            showMessage("此设备申请未获批准。\n\n请联系管理员处理后重新检查。\n\n设备编号：" + deviceId);
+            handler.post(() -> showGate("此设备申请未获批准。\n\n请联系管理员处理后重新检查。\n\n设备编号：" + deviceId));
         } else {
             String message = "请将下面的申请码告知管理员，等待审核通过。\n\n设备申请码：\n" +
                     (deviceCode.isEmpty() ? "正在获取……" : deviceCode) +
                     "\n\n申请码有效期为30分钟。授权通过后，应用会自动进入影视首页。";
             showMessage(message);
+        }
+    }
+
+    private void showGate(String message) {
+        if (finished || activity.isFinishing()) return;
+        authorized = false;
+        messageView.setText(message);
+        if (!dialog.isShowing()) {
+            dialog.show();
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> checkStatus());
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(
+                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.58f),
+                        WindowManager.LayoutParams.WRAP_CONTENT
+                );
+            }
         }
     }
 
@@ -244,13 +262,14 @@ public final class DeviceAuthManager {
     }
 
     private void approved() {
-        if (finished) return;
-        finished = true;
-        handler.removeCallbacks(pollRunnable);
+        if (finished || activity.isFinishing()) return;
+        authorized = true;
         handler.removeCallbacks(refreshCodeRunnable);
         if (dialog.isShowing()) dialog.dismiss();
-        if (callback != null && !activity.isFinishing()) callback.onApproved();
-        executor.shutdown();
+        if (!callbackDelivered && callback != null) {
+            callbackDelivered = true;
+            callback.onApproved();
+        }
     }
 
     public void cancel() {
