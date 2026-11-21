@@ -31,7 +31,7 @@ public final class DeviceAuthManager {
     private static final String KEY_DEVICE_ID = "fusiontv_device_id";
     private static final String KEY_DEVICE_TOKEN = "fusiontv_device_token";
     private static final long POLL_INTERVAL = 5000L;
-    private static final long CODE_REFRESH_INTERVAL = 25 * 60 * 1000L;
+    private static final long CODE_REFRESH_INTERVAL = 5 * 60 * 1000L;
 
     public interface Callback {
         void onApproved();
