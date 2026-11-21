@@ -21,7 +21,7 @@ chaquopy {
             install "lxml"
             install "pyquery"
             install "requests"
-            install "jsonpath"
+            install "jsonpath-ng"
             install "pycryptodome"
             install "beautifulsoup4"
         }
