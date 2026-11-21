@@ -22,6 +22,7 @@ import androidx.viewpager.widget.ViewPager;
 
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.auth.DeviceAuthManager;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Setting;
 
@@ -83,6 +84,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private View mOldView;
     private boolean confirm;
     private Clock mClock;
+    private DeviceAuthManager mDeviceAuth;
     private View mFocus;
 
     private Site getHome() {
@@ -111,7 +113,10 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         setViewModel();
         setHomeType();
         setPager();
-        initConfig();
+        mDeviceAuth = DeviceAuthManager.create(this);
+        mDeviceAuth.start(() -> {
+            if (!isFinishing()) initConfig();
+        });
     }
 
     @Override
@@ -548,6 +553,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Override
     protected void onDestroy() {
+        if (mDeviceAuth != null) mDeviceAuth.cancel();
         super.onDestroy();
         WallConfig.get().clear();
         LiveConfig.get().clear();
