@@ -85,6 +85,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private boolean confirm;
     private Clock mClock;
     private DeviceAuthManager mDeviceAuth;
+    private boolean mDeviceAuthorized;
     private View mFocus;
 
     private Site getHome() {
@@ -99,7 +100,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        checkAction(intent);
+        setIntent(intent);
+        if (mDeviceAuthorized) checkAction(intent);
     }
 
     @Override
@@ -114,6 +116,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mDeviceAuth = DeviceAuthManager.create(this);
         mDeviceAuth.start(() -> {
             if (!isFinishing()) {
+                mDeviceAuthorized = true;
                 Server.get().start();
                 Tbs.init();
                 initConfig();
