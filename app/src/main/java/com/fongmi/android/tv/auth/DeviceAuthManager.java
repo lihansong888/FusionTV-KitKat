@@ -75,9 +75,9 @@ public final class DeviceAuthManager {
         this.activity = activity;
         messageView = new TextView(activity);
         messageView.setGravity(Gravity.CENTER);
-        messageView.setTextSize(22);
-        messageView.setPadding(dp(28), dp(24), dp(28), dp(24));
-        messageView.setMinWidth(dp(360));
+        messageView.setTextSize(18);
+        messageView.setPadding(dp(18), dp(14), dp(18), dp(14));
+        
         dialog = new MaterialAlertDialogBuilder(activity)
                 .setTitle("设备授权")
                 .setView(messageView)
@@ -252,7 +252,7 @@ public final class DeviceAuthManager {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> checkStatus());
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setLayout(
-                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.58f),
+                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.42f),
                         WindowManager.LayoutParams.WRAP_CONTENT
                 );
             }
