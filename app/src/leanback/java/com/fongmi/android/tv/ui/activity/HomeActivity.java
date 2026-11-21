@@ -114,12 +114,20 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         setHomeType();
         setPager();
         mDeviceAuth = DeviceAuthManager.create(this);
-        mDeviceAuth.start(() -> {
-            if (!isFinishing()) {
-                mDeviceAuthorized = true;
-                Server.get().start();
-                Tbs.init();
-                initConfig();
+        mDeviceAuth.start(new DeviceAuthManager.Callback() {
+            @Override
+            public void onApproved() {
+                if (!isFinishing()) {
+                    mDeviceAuthorized = true;
+                    Server.get().start();
+                    Tbs.init();
+                    initConfig();
+                }
+            }
+
+            @Override
+            public void onRevoked() {
+                mDeviceAuthorized = false;
             }
         });
     }
