@@ -106,8 +106,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     protected void initView() {
         mClock = Clock.create(mBinding.clock).format("MM/dd HH:mm:ss");
         mResult = Result.empty();
-        Server.get().start();
-        Tbs.init();
         setTitleView();
         setRecyclerView();
         setViewModel();
@@ -115,7 +113,11 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         setPager();
         mDeviceAuth = DeviceAuthManager.create(this);
         mDeviceAuth.start(() -> {
-            if (!isFinishing()) initConfig();
+            if (!isFinishing()) {
+                Server.get().start();
+                Tbs.init();
+                initConfig();
+            }
         });
     }
 
