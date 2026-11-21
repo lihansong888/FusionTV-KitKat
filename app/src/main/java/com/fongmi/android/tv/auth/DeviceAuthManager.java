@@ -16,7 +16,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,7 +47,6 @@ public final class DeviceAuthManager {
     private String deviceId;
     private String deviceToken;
     private String deviceCode = "";
-    private String lastStatus = "pending";
     private volatile boolean finished;
     private volatile boolean requestInFlight;
 
@@ -180,7 +178,13 @@ public final class DeviceAuthManager {
                 if (result.optBoolean("ok")) {
                     handleStatus(result.optString("status", "pending"), result.optString("message", ""));
                 } else {
-                    showMessage("授权状态暂时无法查询，正在自动重试。\n\n" + currentCodeText());
+                    if (result.optInt("_http_code", 0) == 404) {
+                        Prefers.remove(KEY_DEVICE_TOKEN);
+                        deviceToken = "";
+                        handler.postDelayed(this::registerDevice, 250L);
+                    } else {
+                        showMessage("授权状态暂时无法查询，正在自动重试。\n\n" + currentCodeText());
+                    }
                 }
             } catch (Exception e) {
                 showMessage("网络暂时不可用，正在自动重试。\n\n" + currentCodeText());
@@ -210,7 +214,6 @@ public final class DeviceAuthManager {
     }
 
     private void handleStatus(String status, String serverMessage) {
-        lastStatus = status;
         if ("approved".equals(status)) {
             handler.post(this::approved);
         } else if ("blocked".equals(status)) {
