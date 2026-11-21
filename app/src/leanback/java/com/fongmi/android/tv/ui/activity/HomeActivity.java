@@ -324,12 +324,50 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         }
     }
 
+    private static final String FUSIONTV_CONFIG_URL = "https://api.lihansong.top/api/v1/config/097fd593f9a9306047a696377be1777a08f1130d1738a587";
+
     public void initConfig() {
         if (isLoading()) return;
         WallConfig.get().init();
-        LiveConfig.get().init().load();
-        VodConfig.get().init().load(getCallback(""), true);
         setLoading(true);
+        Config remoteConfig = Config.find(FUSIONTV_CONFIG_URL, 0).name("FusionTV云端配置").update();
+        VodConfig.load(remoteConfig, new Callback() {
+            @Override
+            public void success(String result) {
+                Notify.show(result);
+            }
+
+            @Override
+            public void success() {
+                Config liveConfig = Config.find(FUSIONTV_CONFIG_URL, 1).name("FusionTV云端直播").update();
+                LiveConfig.load(liveConfig, new Callback() {
+                    @Override
+                    public void success() {
+                        if (mDeviceAuthorized) checkAction(getIntent());
+                        RefreshEvent.video();
+                        setLogo();
+                        setLoading(false);
+                    }
+
+                    @Override
+                    public void error(String msg) {
+                        Notify.show(msg);
+                        if (mDeviceAuthorized) checkAction(getIntent());
+                        RefreshEvent.video();
+                        setLogo();
+                        setLoading(false);
+                    }
+                });
+            }
+
+            @Override
+            public void error(String msg) {
+                getHomeFragment().mBinding.progressLayout.showContent();
+                mResult = Result.empty();
+                Notify.show("云端配置加载失败：" + msg);
+                setLoading(false);
+            }
+        });
     }
 
     private Callback getCallback(String success) {
