@@ -101,7 +101,7 @@ public final class DeviceAuthManager {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> checkStatus());
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setLayout(
-                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.58f),
+                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.42f),
                         WindowManager.LayoutParams.WRAP_CONTENT
                 );
             }
