@@ -31,10 +31,11 @@ public final class DeviceAuthManager {
     private static final String KEY_DEVICE_ID = "fusiontv_device_id";
     private static final String KEY_DEVICE_TOKEN = "fusiontv_device_token";
     private static final long POLL_INTERVAL = 5000L;
-    private static final long CODE_REFRESH_INTERVAL = 5 * 60 * 1000L;
+    private static final long CODE_REFRESH_INTERVAL = 25 * 60 * 1000L;
 
     public interface Callback {
         void onApproved();
+        default void onRevoked() { }
     }
 
     private final Activity activity;
@@ -50,7 +51,6 @@ public final class DeviceAuthManager {
     private volatile boolean finished;
     private volatile boolean authorized;
     private volatile boolean requestInFlight;
-    private boolean callbackDelivered;
 
     private final Runnable pollRunnable = new Runnable() {
         @Override
@@ -98,7 +98,7 @@ public final class DeviceAuthManager {
         showMessage("正在连接授权服务器，请稍候……");
         if (!dialog.isShowing()) {
             dialog.show();
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> registerDevice());
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> checkStatus());
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setLayout(
                         (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.58f),
@@ -180,7 +180,8 @@ public final class DeviceAuthManager {
                 if (result.optBoolean("ok")) {
                     handleStatus(result.optString("status", "pending"), result.optString("message", ""));
                 } else {
-                    if (result.optInt("_http_code", 0) == 404) {
+                    int httpCode = result.optInt("_http_code", 0);
+                    if (httpCode == 401 || httpCode == 403 || httpCode == 404) {
                         Prefers.remove(KEY_DEVICE_TOKEN);
                         deviceToken = "";
                         handler.postDelayed(this::registerDevice, 250L);
@@ -219,15 +220,27 @@ public final class DeviceAuthManager {
         if ("approved".equals(status)) {
             handler.post(this::approved);
         } else if ("blocked".equals(status)) {
-            handler.post(() -> showGate("此设备已被管理员远程锁定。\n\n请联系管理员恢复设备使用。\n\n设备编号：" + deviceId));
+            handler.post(() -> revoke("此设备已被管理员远程锁定。\n\n请联系管理员恢复设备使用。\n\n设备编号：" + deviceId));
         } else if ("rejected".equals(status)) {
-            handler.post(() -> showGate("此设备申请未获批准。\n\n请联系管理员处理后重新检查。\n\n设备编号：" + deviceId));
+            handler.post(() -> revoke("此设备申请未获批准。\n\n请联系管理员处理后重新检查。\n\n设备编号：" + deviceId));
         } else {
             String message = "请将下面的申请码告知管理员，等待审核通过。\n\n设备申请码：\n" +
                     (deviceCode.isEmpty() ? "正在获取……" : deviceCode) +
                     "\n\n申请码有效期为30分钟。授权通过后，应用会自动进入影视首页。";
-            showMessage(message);
+            handler.post(() -> revoke(message));
         }
+    }
+
+    private void revoke(String message) {
+        if (finished || activity.isFinishing()) return;
+        boolean wasAuthorized = authorized;
+        authorized = false;
+        if (wasAuthorized && callback != null) callback.onRevoked();
+        if (!activity.hasWindowFocus()) {
+            activity.finishAffinity();
+            return;
+        }
+        showGate(message);
     }
 
     private void showGate(String message) {
@@ -263,13 +276,11 @@ public final class DeviceAuthManager {
 
     private void approved() {
         if (finished || activity.isFinishing()) return;
+        boolean wasAuthorized = authorized;
         authorized = true;
         handler.removeCallbacks(refreshCodeRunnable);
         if (dialog.isShowing()) dialog.dismiss();
-        if (!callbackDelivered && callback != null) {
-            callbackDelivered = true;
-            callback.onApproved();
-        }
+        if (!wasAuthorized && callback != null) callback.onApproved();
     }
 
     public void cancel() {
