@@ -86,6 +86,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private Clock mClock;
     private DeviceAuthManager mDeviceAuth;
     private boolean mDeviceAuthorized;
+    private boolean mAppInitialized;
     private View mFocus;
 
     private Site getHome() {
@@ -119,9 +120,12 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
             public void onApproved() {
                 if (!isFinishing()) {
                     mDeviceAuthorized = true;
-                    Server.get().start();
-                    Tbs.init();
-                    initConfig();
+                    if (!mAppInitialized) {
+                        Server.get().start();
+                        Tbs.init();
+                        initConfig();
+                        mAppInitialized = true;
+                    }
                 }
             }
 
@@ -337,7 +341,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
             @Override
             public void success() {
-                checkAction(getIntent());
+                if (mDeviceAuthorized) checkAction(getIntent());
                 RefreshEvent.video();
                 setLogo();
                 if (!TextUtils.isEmpty(success)) Notify.show(success);
@@ -441,6 +445,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
+        if (!mDeviceAuthorized) return;
         switch (event.getType()) {
             case SEARCH:
                 CollectActivity.start(this, event.getText(), true);
@@ -453,6 +458,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCastEvent(CastEvent event) {
+        if (!mDeviceAuthorized) return;
         if (VodConfig.get().getConfig().equals(event.getConfig())) {
             VideoActivity.cast(this, event.getHistory().update(VodConfig.getCid()));
         } else {
