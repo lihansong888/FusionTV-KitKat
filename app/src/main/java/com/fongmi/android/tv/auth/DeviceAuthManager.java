@@ -75,8 +75,13 @@ public final class DeviceAuthManager {
         this.activity = activity;
         messageView = new TextView(activity);
         messageView.setGravity(Gravity.CENTER);
-        messageView.setTextSize(18);
-        messageView.setPadding(dp(18), dp(14), dp(18), dp(14));
+        messageView.setIncludeFontPadding(false);
+        messageView.setTextSize(isPhoneLayout() ? 21 : 18);
+        messageView.setLineSpacing(0, isPhoneLayout() ? 1.08f : 1.0f);
+        messageView.setPadding(dp(isPhoneLayout() ? 20 : 18),
+                dp(isPhoneLayout() ? 18 : 7),
+                dp(isPhoneLayout() ? 20 : 18),
+                dp(isPhoneLayout() ? 18 : 7));
         
         dialog = new MaterialAlertDialogBuilder(activity)
                 .setTitle("设备授权")
@@ -99,12 +104,7 @@ public final class DeviceAuthManager {
         if (!dialog.isShowing()) {
             dialog.show();
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> checkStatus());
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setLayout(
-                        (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.42f),
-                        WindowManager.LayoutParams.WRAP_CONTENT
-                );
-            }
+            configureDialogWindow();
         }
         registerDevice();
         handler.postDelayed(refreshCodeRunnable, CODE_REFRESH_INTERVAL);
@@ -112,6 +112,23 @@ public final class DeviceAuthManager {
 
     private int dp(float value) {
         return (int) (value * activity.getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private boolean isPhoneLayout() {
+        return activity.getResources().getConfiguration().smallestScreenWidthDp < 600;
+    }
+
+    private void configureDialogWindow() {
+        if (dialog.getWindow() == null) return;
+        float widthRatio = isPhoneLayout() ? 0.82f : 0.42f;
+        dialog.getWindow().setLayout(
+                (int) (activity.getResources().getDisplayMetrics().widthPixels * widthRatio),
+                WindowManager.LayoutParams.WRAP_CONTENT
+        );
+        TextView titleView = dialog.findViewById(androidx.appcompat.R.id.alertTitle);
+        if (titleView != null) titleView.setTextSize(isPhoneLayout() ? 21 : 18);
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextSize(isPhoneLayout() ? 16 : 14);
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextSize(isPhoneLayout() ? 16 : 14);
     }
 
     private void registerDevice() {
